@@ -2,24 +2,18 @@
 #include <stdlib.h>
 #include <windows.h>
 
-HWND hwnd;     // Windowsda bir pencere temsil etmede kullanılan HWND türü bir değişken olan hwnd'yi tanımlar 
-               //Bir windows paneli oluşturulduğunda veya alındığında kullanılır
+HWND hwnd;  
+HWND hStatic;  
 
-HWND hStatic;  //Windowsda kullanılan bir HWND türünden değişken olan hStatic'i tanımlar.
-               //Genellikle metin veya resim gibi statik içerikleri göstermek için kullanılır
-
-//Matematiksel ifadeleri değerlendirmek için bir fonksiyon tanımlar
 double evaluateExpression(const char* expression) {
-    double result = 0.0;//Bu kısım double olarak result kısmını tanımlar ve işlemlerin değerini tutar
-    int num1, num2;//Bu kısım arasında işlem yapılacak olan iki değeri tutar
-    char op;//Bu kısım op adındaki matematiksel operatör işaretlerini tutar
+    double result = 0.0;
+    int num1, num2;
+    char op;
 
     int parsed = sscanf(expression, "%d %c %d", &num1, &op, &num2);
-    //Bu kısım bir karakter dizisinden matematiksel bir ifadeyi ayrıştırır ve bu ifadedeki sayıları ve operatörü çıkarır ve başarı durumunu parsed değişkenine kaydeder
-
+ 
     if (parsed == 3) {
-       //Bu kısımdaki swicth case verilen matematik operatörlerinin istenen işlemleri yapmasını sağlar ve unu kontrol eder
-        switch (op) {
+               switch (op) {
             case '+':
                 result = num1 + num2;
                 break;
@@ -33,44 +27,30 @@ double evaluateExpression(const char* expression) {
                 if (num2 != 0) {
                     result = (double)num1 / num2;
                 } else {
-                    // Bu kısım 0 ve 0 bölümü olur olmadığını kontrol eder eğer girilen işlem buysa error mesajı girer
                     MessageBox(hwnd, "Error: Division by zero", "Error", MB_OK | MB_ICONERROR);
                 }
                 break;
             default:
-                // Programın bilmediği herhangi bir operatör girilirse sonuç olarak error mesajı verilmesini sağlar
-                MessageBox(hwnd, "Error: Unknown operator", "Error", MB_OK | MB_ICONERROR);
+                   MessageBox(hwnd, "Error: Unknown operator", "Error", MB_OK | MB_ICONERROR);
                 break;
         }
     } else {
-        // Programın kabul etmediği herhangi bir ifade girildiğinde error mesajı verilmesini sağlar
         MessageBox(hwnd, "Error: Invalid expression", "Error", MB_OK | MB_ICONERROR);
     }
     return result;
 }
 
-// Windowsda herhangi bir buton oluşturmak için kullanılır
-//Fonksiyon içinde bulunan text,x,y,width,height,id gibi değerler butonun kişiselleştirilmesini sağlar
 HWND CreateButton(const char* text, int x, int y, int width, int height, int id) {
     return CreateWindow("BUTTON", text, WS_VISIBLE | WS_CHILD, x, y, width, height, hwnd, (HMENU)id, NULL, NULL);
 }
 
-//Windows uygulamasında mesajları işlemek içn kullanılır. İşlenmesi istenen olaylara nasıl tepki verileceğini kontrol eder
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
        
         case WM_CREATE: {
-            //Bu kısım yapılam hesaplamaları görüntülemek için kullanılır
-            //Ayrıca static sınıfı kullanılarak statik metin kontrolü oluşturur
+          
             hStatic = CreateWindow("STATIC", "", WS_VISIBLE | WS_CHILD, 10, 10, 300, 20, hwnd, (HMENU)100, NULL, NULL);
-            /*Static kullanılacak kontrolün sınıfını belirtir. "" kısmı ikinci parametrenin başlangıçta içereceği
-            metnin belitrimini sağlar. WS_VISIBLE kontrolün görünür olmasını sağlar. WS_CHILD ise kontrolün bir alt 
-            pencere olmasını sağlar. 10, 10, 300, 20 sayıları kontrolün pencere içinde konum ve boyutunu belirlemede
-            kullanılır. hwnd kontrolün hangi pencere altında bulunacağına karar verir. (HMENU)100: kontrolün bir 
-            menü tanımlayıcı olarak çalışır.NULL,NULL bu parametreler kullanılan herhangi bir still veya özellik 
-            olmadığını belitrmek için kullanılır*/
 
-            // Numaralar ve operatörler için buton oluşturur
             CreateWindow("BUTTON", "1", WS_VISIBLE | WS_CHILD, 10, 50, 50, 50, hwnd, (HMENU)1, NULL, NULL);
             CreateWindow("BUTTON", "2", WS_VISIBLE | WS_CHILD, 70, 50, 50, 50, hwnd, (HMENU)2, NULL, NULL);
             CreateWindow("BUTTON", "3", WS_VISIBLE | WS_CHILD, 130, 50, 50, 50, hwnd, (HMENU)3, NULL, NULL);
@@ -89,108 +69,68 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             CreateWindow("BUTTON", "/", WS_VISIBLE | WS_CHILD, 190, 230, 50, 50, hwnd, (HMENU)16, NULL, NULL);
             CreateWindow("BUTTON", "CLEAR", WS_VISIBLE | WS_CHILD, 250, 230, 70, 50, hwnd, (HMENU)17, NULL, NULL);
 
-            //Butonların verilen windows paneline sığdırılmasını sağlar
             SetWindowPos(hwnd, NULL, 0, 0, 400, 330, SWP_NOMOVE | SWP_NOZORDER);    
-
             break;
         }
-        
-       // ...
+    
 
 case WM_COMMAND: {
-    //Girilen menü öğelerini ve kontrol düğmelerini tıkladığında gerekilen olayların oluşmasını sağlar
     if (HIWORD(wParam) == BN_CLICKED) {
-    //herhangi bir butona tıklanırsa bu tıklama olayını kontrol eder    
         
         int buttonId = LOWORD(wParam);
-        //kullanıcının hangi kontrolü veya ögeyi etkilediğini belirlemede kullanılır 
         char buttonText[10];
-        //buttonText dizisinin en fazla 9 karakterlik bir metni saklayabilmesini sağlar
         GetWindowText(GetDlgItem(hwnd, buttonId), buttonText, sizeof(buttonText));
-        //kullanıcının bir düğmeye tıklamasıyla yapılan bir işlemin metinsel sonuçlarını elde etmesini sağlar
         char currentText[100];
-         //currentText dizisinin en fazla 99 karakterlik bir metni saklayabilmesini sağlar
         GetWindowText(GetDlgItem(hwnd, 100), currentText, sizeof(currentText));
-        //kullanıcının bir kontrolü etkilemesine bakarak bu kontrolün metnini almada kullanılır
 
         if (buttonId >= 1 && buttonId <= 13) {
-        //buttonId değişkeninin değerini kontrol eder ve bu değerin 1-13 arasında olup olmadığını kontrol eder
             strcat(currentText, buttonText);
-            //Bu kod, currentText karakter dizisine buttonText karakter dizisinin içeriğini eklemede kullanılır
         } else if (buttonId == 15) {
-         //Bu kısım buttonId değişkeninin değerini kontrol eder ve eğer bu değer 15'e eşitse ilgili bloktaki kodu çalıştırır
             int len = strlen(currentText);
-            //Bu kısım currentText karakter dizisinin uzunluğunu hesaplar ve elde edilen değeri len değişkenine atar
             if (len > 0) {
-            //Bu kısım len değişkeninin değerini kontrol eder ve eğer bu değer 0'dan büyükse ilgili bloğun içindeki kodu çalıştırır
                 currentText[len - 1] = '\0';
-                /*Bu kodda currentText karakter dizisinin sonundaki karakteri null karakterle değiştirir ve karakter 
-                dizisini sonlandırmada kullanılır ve len değişkeninin değeri kullanılarak son karakteri verir*/
             }
         } else if (buttonId == 16) {
-          //Bu kodda buttonId değişkeninin değeri kontrol edilir ve eğer bu değer 16'ya eşitse ilgili bloğun içindeki kod çalışır
+         
             strcat(currentText, buttonText);
-            //Bu kod, currentText karakter dizisine buttonText karakter dizisinin içeriğini eklemede kullanılır
         } else if (buttonId == 14) {
-           //Bu kodda buttonId değişkeninin değeri kontrol edilir ve eğer bu değer 14'e eşitse ilgili bloğun içindeki kod çalışır
             double result = evaluateExpression(currentText);
-            //Bu kodda evaluateExpression fonksiyonu çağırılarak currentText ifadesini değerlendirilir ve elde edilen sonuç result adlı double türündeki değişkene atılır
             char resultText[50];
-            //resultText dizisinin en fazla 49 karakterlik bir metni saklayabilmesini sağlar
             snprintf(resultText, sizeof(resultText), "Result: %.2f", result);
-            //Bu kodda result adlı double değişkenin değeri resultText karakter dizisine formatlı bir şekilde yazdırılır ve resultText dizisine saklanır
             MessageBox(hwnd, resultText, "Calculation Result", MB_OK);
-            //Bu kod bir pencere üzerinde bir MessageBox görüntülemede için kullanılır
             currentText[0] = '\0';
-            //Bu kod currentText karakter dizisinin ilk elemanını null karakterle değiştirir ve karakter dizisinin boş bir diziyi temsil etmesini sağlar
         } else if (buttonId == 17) {
-            //Bu kodda buttonId değişkeninin değeri kontrol edilir ve eğer bu değer 17'ye eşitse ilgili bloğun içindeki kod çalışır
             currentText[0] = '\0';
-             //Bu kod currentText karakter dizisinin ilk elemanını null karakterle değiştirir ve karakter dizisinin boş bir diziyi temsil etmesini sağlar
         }
         SetWindowText(GetDlgItem(hwnd, 100), currentText);
-        //Bu kodda belli bir penceredeki ID'si 100 olan bir kontrolün metin içeriğini currentText karakter dizisiyle değiştirir
     }
     break;
 }
         case WM_DESTROY: {
-            PostQuitMessage(0);
-        //WM_DESTROY mesajı bir pencere kapatıldığında veya yok edildiğinde gönderilir ve programın sonlandırılmasını sağlar   
+            PostQuitMessage(0);   
             break;
         }
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
-    }       //Bu kod bir Windows penceresinin olaylarına varsayılan işlemi gerçekleştirmk için bir mesajın olmadığı durumlarda kullanılır
+    }  
     return 0;
 }
 void CreateCalculatorWindow() { 
     WNDCLASS wc = {0};
-    //Bu kod Windowsda bir pencere sınıfının tanımlanmasında kullanılan WNDCLASS yapısını sıfır değerleriyle başlatır
     wc.lpfnWndProc = WindowProc;
-    //Bu kod WNDCLASS yapısının lpfnWndProc üyesine bir pencere işleme işlevi atanmasını sağlar
     wc.hInstance = GetModuleHandle(NULL);
-    //Bu kod WNDCLASS yapısının hInstance üyesine bir uygulama örneği tanımlayan işlemi gerçekleştirir
     wc.lpszClassName = "CalculatorWindowClass";
-    //Bu kod WNDCLASS yapısının lpszClassName üyesine bir pencere sınıfı adı atar 
     RegisterClass(&wc);
-    //Bu kod WNDCLASS yapısını kullanarak bir pencere sınıfını kaydeder ve bu sınıfın tanımlandığından emin olur 
     hwnd = CreateWindow("CalculatorWindowClass", "Calculator", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 400, 300, NULL, NULL, GetModuleHandle(NULL), NULL);
-    //Bu kod belli bir pencere sınıfı kullanarak bir pencere oluşturan bir Windows API fonksiyonunu çağırır
     ShowWindow(hwnd, SW_SHOWDEFAULT);
-    //Bu kod belli bir pencereyi ekranda görünür hale getirmede kullanılır
     MSG msg;
-    /*Bu kod bir Windows uygulamasında kullanılan bir MSG yapısını tanımlar
-      Bu yapı Windows tarafından oluşturulan ve işlenen olayları temsil eder*/
+
     while (GetMessage(&msg, NULL, 0, 0)) {
-    //Bu kod Windows mesaj döngüsünü başlatan döngü başlangıcıdır. Bu döngü uygulamanın çalışma süresince Windows'tan gelen olayları işler.
         TranslateMessage(&msg);
-        //Bu kod alınan bir Windows mesajının klavye mesajları üzerindeki etkilerini çözmede kullanılan bir işlevdir
         DispatchMessage(&msg);
-        //Bu kod bir Windows mesajını uygun pencere işleme işlevine yönlendiren bir işlevidir
     }
 }
 int main() {
     CreateCalculatorWindow();   
     return 0;
-    //Bu kod bir CreateCalculatorWindow fonksiyonunu çağırarak basit bir Windows uygulamasının başlangıcını oluşturan bir main fonksiyonunu içerir
 }
